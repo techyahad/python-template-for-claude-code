@@ -201,7 +201,7 @@ gh issue view 123
 
 2. **コード品質**
    - 型ヒントは省略しない（mypy strict mode準拠）
-   - 新しいコードを書いた後は必ず `uv run ruff format .` を実行
+   - 新しいコードを書いた後は必ず `make format` を実行
    - テストを書く際は、正常系・異常系・エッジケースをカバー
 
 3. **パッケージ構造**
@@ -218,12 +218,11 @@ gh issue view 123
    - テストメソッド名は日本語で意図を明確に（例: `test_正常系_ユーザー登録が成功する`）
 
 6. **コミット前の確認**
-   - `uv run pre-commit run --all-files` でチェックをパス
+   - `make check-all` でチェックをパス
    - テストがすべて通ることを確認
 
 7. **GitHub操作**
-   - リポジトリ作成時は `gh repo create` を使用
-   - PR作成時は `.github/PULL_REQUEST_TEMPLATE.md` を活用
+   - PR作成時は `make pr` でテンプレートを活用
    - ブランチ保護設定でコード品質を保持
    - `gh` コマンドを使った効率的なワークフロー
 
