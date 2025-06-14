@@ -27,7 +27,6 @@ def get_files_to_update() -> list[Path]:
         "pyproject.toml",
         "CLAUDE.md",
         "README.md",
-        "src/project_name/__init__.py",
         "tests/conftest.py",
         "tests/unit/test_example.py",
     ]
