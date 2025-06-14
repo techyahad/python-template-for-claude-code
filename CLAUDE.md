@@ -7,7 +7,7 @@
 **プロジェクトを開始する前に、必ずこの項目をプロジェクトに特化したものに更新してください。**
 
 このプロジェクトは、[Claude Code](https://www.anthropic.com/claude-code) での開発に最適化されたPythonプロジェクトテンプレートです。
-厳格な型チェック、自動化されたコード品質管理、包括的なCIを提供します。
+厳格な型チェック、自動化されたコード品質管理、CIに加えて、GitHub CLIを使用したGitHub操作をサポートします。
 また、[Claude Code](https://www.anthropic.com/claude-code) との協働をサポートするためのドキュメントも提供します。
 
 ### 開発方針
@@ -113,32 +113,51 @@ def process_items(
 
 ## よく使うコマンド
 
+### 基本的な開発コマンド（Makefile使用）
+
 ```bash
 # 開発環境のセットアップ
-uv sync --all-extras
+make setup                  # 依存関係インストール + pre-commitフック設定
 
 # テスト実行
-uv run pytest
+make test                   # テスト実行
+make test-cov               # カバレッジ付きテスト実行
 
 # コード品質チェック
-uv run ruff format .
-uv run ruff check .
-uv run mypy src/ --strict
+make format                 # コードフォーマット
+make lint                   # リントチェック（自動修正付き）
+make typecheck              # 型チェック
+make security               # セキュリティチェック
 
-# pre-commit実行
-uv run pre-commit run --all-files
+# 統合チェック
+make check                  # format, lint, typecheck, testを順番に実行
+make check-all              # pre-commitで全ファイルをチェック
+
+# GitHub操作
+make pr                     # PRテンプレートを使用してPR作成
+make issue-bug              # バグレポートのイシュー作成
+make issue-feature          # 機能要望のイシュー作成
+make issue-claude           # Claude Codeからの要望や改善要求のイシュー作成
+make issue                  # イシュー作成（テンプレート選択）
+
+# その他
+make clean                  # キャッシュファイルの削除
+make help                   # 利用可能なコマンド一覧
 
 # 依存関係の追加
 uv add package_name
 uv add --dev dev_package_name
+```
 
-# GitHub CLI操作
-gh repo create              # リポジトリの作成
-gh pr create                # プルリクエストの作成
-gh pr list                  # プルリクエスト一覧
-gh issue create             # イシューの作成
-gh repo view                # リポジトリの表示
-gh auth status              # 認証状態の確認
+### 直接実行する場合（uv run使用）
+
+```bash
+# Makefileが使えない環境での代替コマンド
+uv run pytest
+uv run ruff format .
+uv run ruff check . --fix
+uv run mypy src/ --strict
+uv run pre-commit run --all-files
 ```
 
 ## GitHub操作のベストプラクティス

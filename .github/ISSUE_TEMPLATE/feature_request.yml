@@ -2,7 +2,6 @@ name: ✨ 機能要望
 description: 新しい機能やアイデアを提案してください
 title: "[Feature]: "
 labels: ["enhancement", "triage"]
-assignees: []
 
 body:
   - type: markdown
@@ -49,7 +48,7 @@ body:
       render: python
       placeholder: |
         from project_name import NewFeature
-        
+
         feature = NewFeature()
         result = feature.do_something()
 

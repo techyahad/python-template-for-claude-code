@@ -6,7 +6,7 @@
 [![Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 
-[Claude Code](https://www.anthropic.com/claude-code)を中心に開発するための、厳格な型チェック、自動フォーマット、包括的なCIを備えたモダンなPythonプロジェクトテンプレートです。
+[Claude Code](https://www.anthropic.com/claude-code)を中心に開発するための、厳格な型チェック、自動フォーマット、CIを備えたモダンなPythonプロジェクトテンプレートです。
 
 ## 🚀 クイックスタート
 
@@ -119,12 +119,12 @@ project-root/
 
 ```bash
 # すべてのテストを実行
-uv run pytest
+make test
 
 # カバレッジ付きで実行
-uv run pytest --cov=project_name --cov-report=html
+make test-cov
 
-# 特定のテストを実行
+# 特定のテストを実行（直接実行）
 uv run pytest tests/unit/test_example.py -v
 ```
 
@@ -132,16 +132,41 @@ uv run pytest tests/unit/test_example.py -v
 
 ```bash
 # コードをフォーマット
-uv run ruff format .
+make format
 
 # コードをリント
-uv run ruff check . --fix
+make lint
 
 # 型チェック
-uv run mypy src/ --strict
+make typecheck
 
-# すべてのチェックを実行
-uv run pre-commit run --all-files
+# すべてのチェックを順番に実行
+make check
+
+# pre-commitで完全チェック
+make check-all
+```
+
+### Makefileの利用
+
+このプロジェクトには、よく使うコマンドをまとめたMakefileが含まれています：
+
+```bash
+# 利用可能なコマンドを表示
+make help
+
+# セットアップ（依存関係インストール + pre-commit設定）
+make setup
+
+# キャッシュファイルの削除
+make clean
+
+# GitHub操作
+make pr                # PRテンプレートを使用してPR作成
+make issue-bug         # バグレポートのイシュー作成
+make issue-feature     # 機能要望のイシュー作成
+make issue-claude      # Claude Code改善のイシュー作成
+make issue             # イシュー作成（テンプレート選択）
 ```
 
 ### 依存関係の追加

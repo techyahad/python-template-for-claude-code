@@ -2,7 +2,6 @@ name: 🐛 バグレポート
 description: バグを報告して改善に協力してください
 title: "[Bug]: "
 labels: ["bug", "triage"]
-assignees: []
 
 body:
   - type: markdown

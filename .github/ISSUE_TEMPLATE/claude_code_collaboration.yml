@@ -2,7 +2,6 @@ name: 🤖 Claude Code協働の改善
 description: Claude Codeとの協働体験の改善提案
 title: "[Claude Code]: "
 labels: ["claude-code", "enhancement", "triage"]
-assignees: []
 
 body:
   - type: markdown
@@ -60,10 +59,10 @@ body:
       placeholder: |
         ```markdown
         ## 新しいセクション
-        
+
         ### 説明
         このセクションでは〜について説明します。
-        
+
         ### 例
         ```python
         # 例のコード
