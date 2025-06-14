@@ -135,11 +135,8 @@ make check                  # format, lint, typecheck, testを順番に実行
 make check-all              # pre-commitで全ファイルをチェック
 
 # GitHub操作
-make pr                     # PRテンプレートを使用してPR作成
-make issue-bug              # バグレポートのイシュー作成
-make issue-feature          # 機能要望のイシュー作成
-make issue-claude           # Claude Codeからの要望や改善要求のイシュー作成
-make issue                  # イシュー作成（テンプレート選択）
+make pr TITLE="タイトル" BODY="本文" [LABEL="ラベル"]      # PR作成
+make issue TITLE="タイトル" BODY="本文" [LABEL="ラベル"]   # イシュー作成
 
 # その他
 make clean                  # キャッシュファイルの削除
@@ -168,7 +165,15 @@ Claude Codeは `gh` コマンドを使用してGitHub操作を行うことがで
 ### プルリクエスト作成
 
 ```bash
-# 基本的なPR作成
+# Makefileコマンドを使用したPR作成
+make pr TITLE="機能追加" BODY="新しい機能を実装しました" LABEL="enhancement"
+make pr TITLE="認証エラー修正" BODY="ログイン時の500エラーを修正" LABEL="bug"
+make pr TITLE="ドキュメント更新" BODY="READMEを更新しました" LABEL="documentation"
+
+# ラベルなしでPR作成
+make pr TITLE="リファクタリング" BODY="コードの可読性を向上させました"
+
+# 直接gh CLIを使用する場合
 gh pr create --title "Feature: Add new functionality" --body "Description of changes"
 
 # テンプレートを使用したPR作成
@@ -181,7 +186,16 @@ gh pr create --draft --title "WIP: Working on feature"
 ### イシュー管理
 
 ```bash
-# イシューの作成
+# Makefileコマンドを使用したイシューの作成
+make issue TITLE="認証の不具合" BODY="ログイン時にエラーが発生します" LABEL="bug"
+make issue TITLE="新機能の提案" BODY="〜の機能があると便利です" LABEL="enhancement"
+make issue TITLE="Claude Code改善" BODY="〜の部分で改善が必要です" LABEL="documentation"
+make issue TITLE="質問" BODY="〜について教えてください" LABEL="question"
+
+# ラベルなしでイシュー作成
+make issue TITLE="一般的な改善提案" BODY="〜を改善してはどうでしょうか"
+
+# 直接gh CLIを使用する場合
 gh issue create --title "Bug: Fix authentication" --body "Description"
 
 # イシューの一覧表示

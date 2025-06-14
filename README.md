@@ -156,13 +156,6 @@ make help
 
 # キャッシュファイルの削除
 make clean
-
-# GitHub操作
-make pr                # PRテンプレートを使用してPR作成
-make issue-bug         # バグレポートのイシュー作成
-make issue-feature     # 機能要望のイシュー作成
-make issue-claude      # Claude Code改善のイシュー作成
-make issue             # イシュー作成（テンプレート選択）
 ```
 
 ### 依存関係の追加
