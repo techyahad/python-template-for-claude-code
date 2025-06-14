@@ -276,28 +276,6 @@ uv run ruff check .
 - 定期的にCLAUDE.mdを見直して更新
 - 新しいベストプラクティスを追加
 
-## よく使うコマンド
-
-```bash
-# 開発環境のセットアップ
-uv sync --all-extras
-
-# テスト実行
-uv run pytest
-
-# コード品質チェック
-uv run ruff format .
-uv run ruff check .
-uv run mypy src/ --strict
-
-# pre-commit実行
-uv run pre-commit run --all-files
-
-# 依存関係の追加
-uv add package_name
-uv add --dev dev_package_name
-```
-
 ## 詳細ガイドの参照
 
 以下の専用ガイドを必要に応じてインポートしてください。
