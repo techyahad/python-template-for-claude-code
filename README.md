@@ -215,16 +215,7 @@ Claude Code使用時：
 - [ ] GitHub CLI（`gh`）の認証設定: `gh auth login`
 
 ### GitHubリポジトリ設定
-- [ ] `main`ブランチ保護を有効化:
-  ```bash
-  gh api repos/:owner/:repo/branches/main/protection \
-    --method PUT \
-    --field required_status_checks='{"strict":true,"contexts":["ci"]}' \
-    --field enforce_admins=true \
-    --field required_pull_request_reviews='{"required_approving_review_count":1}' \
-    --field restrictions=null
-  ```
-- [ ] または Web UI でブランチ保護を設定: `gh repo view --web`
+- [ ] `main`ブランチ保護を有効化: `gh repo view --web`
 - [ ] PRレビューを必須に設定（上記のAPIコールに含まれる）
 - [ ] ステータスチェック（CI）を必須に設定（上記のAPIコールに含まれる）
 - [ ] Dependabotを有効化
