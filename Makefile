@@ -1,4 +1,4 @@
-.PHONY: help test test-cov format lint typecheck security check check-all setup pr issue issue-bug issue-feature issue-claude clean
+.PHONY: help test test-cov format lint typecheck security check check-all setup pr issue clean
 
 # デフォルトターゲット
 help:
@@ -15,10 +15,8 @@ help:
 	@echo "  audit        - 依存関係の脆弱性チェック（pip-audit）"
 	@echo "  check        - format, lint, typecheck, testを順番に実行"
 	@echo "  check-all    - pre-commitで全ファイルをチェック"
-	@echo "  pr           - PRテンプレートを使用してPR作成"
-	@echo "  issue-bug    - バグレポートのイシュー作成"
-	@echo "  issue-feature - 機能要望のイシュー作成"
-	@echo "  issue-claude - Claude Code改善のイシュー作成"
+	@echo "  pr           - PR作成 (TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"])"
+	@echo "  issue        - イシュー作成 (TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"])"
 	@echo "  clean        - キャッシュファイルの削除"
 
 # セットアップ
@@ -56,19 +54,34 @@ check-all:
 
 # GitHub操作
 pr:
-	gh pr create --template .github/PULL_REQUEST_TEMPLATE.md
-
-issue-bug:
-	gh issue create --template .github/ISSUE_TEMPLATE/bug_report.yml
-
-issue-feature:
-	gh issue create --template .github/ISSUE_TEMPLATE/feature_request.yml
-
-issue-claude:
-	gh issue create --template .github/ISSUE_TEMPLATE/claude_code_collaboration.yml
+	@if [ -z "$(TITLE)" ]; then \
+		echo "Error: TITLE is required. Usage: make pr TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"]"; \
+		exit 1; \
+	fi
+	@if [ -z "$(BODY)" ]; then \
+		echo "Error: BODY is required. Usage: make pr TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"]"; \
+		exit 1; \
+	fi
+	@if [ -n "$(LABEL)" ]; then \
+		gh pr create --title "$(TITLE)" --body "$(BODY)" --label "$(LABEL)"; \
+	else \
+		gh pr create --title "$(TITLE)" --body "$(BODY)"; \
+	fi
 
 issue:
-	gh issue create
+	@if [ -z "$(TITLE)" ]; then \
+		echo "Error: TITLE is required. Usage: make issue TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"]"; \
+		exit 1; \
+	fi
+	@if [ -z "$(BODY)" ]; then \
+		echo "Error: BODY is required. Usage: make issue TITLE=\"タイトル\" BODY=\"本文\" [LABEL=\"ラベル\"]"; \
+		exit 1; \
+	fi
+	@if [ -n "$(LABEL)" ]; then \
+		gh issue create --title "$(TITLE)" --body "$(BODY)" --label "$(LABEL)"; \
+	else \
+		gh issue create --title "$(TITLE)" --body "$(BODY)"; \
+	fi
 
 # クリーンアップ
 clean:
