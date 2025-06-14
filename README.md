@@ -199,7 +199,7 @@ Claude Code使用時：
 - [ ] `pyproject.toml`の作者情報を更新
 - [ ] LICENSEを選択・更新
 - [ ] README.mdをプロジェクト説明で更新
-- [ ] GitHub CLI（`gh`）の認証設定: `gh auth login`
+- [ ] CLAUDE.mdにプロジェクト固有の内容を追加
 
 ### GitHubリポジトリ設定
 - [ ] `main`ブランチ保護を有効化: `gh repo view --web`
