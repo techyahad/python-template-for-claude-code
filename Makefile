@@ -12,6 +12,7 @@ help:
 	@echo "  lint         - リントチェック（ruff check --fix）"
 	@echo "  typecheck    - 型チェック（mypy）"
 	@echo "  security     - セキュリティチェック（bandit）"
+	@echo "  audit        - 依存関係の脆弱性チェック（pip-audit）"
 	@echo "  check        - format, lint, typecheck, testを順番に実行"
 	@echo "  check-all    - pre-commitで全ファイルをチェック"
 	@echo "  pr           - PRテンプレートを使用してPR作成"
@@ -45,6 +46,9 @@ typecheck:
 
 security:
 	uv run bandit -r src/
+
+audit:
+	uv run pip-audit
 
 # 統合チェック
 check: format lint typecheck test

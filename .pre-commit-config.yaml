@@ -37,12 +37,12 @@ repos:
         args: [-c, pyproject.toml]
         additional_dependencies: ["bandit[toml]"]
 
-  # Dependency scanning (optional - uncomment if needed)
-  # - repo: https://github.com/pyupio/safety
-  #   rev: 3.2.4
-  #   hooks:
-  #     - id: safety
-  #       args: [--json]
+  # Dependency vulnerability scanning
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.7.3
+    hooks:
+      - id: pip-audit
+        args: [--desc, --fix]
 
   # Secret detection (optional - uncomment if needed)
   # - repo: https://github.com/Yelp/detect-secrets

@@ -127,7 +127,8 @@ make test-cov               # カバレッジ付きテスト実行
 make format                 # コードフォーマット
 make lint                   # リントチェック（自動修正付き）
 make typecheck              # 型チェック
-make security               # セキュリティチェック
+make security               # セキュリティチェック（bandit）
+make audit                  # 依存関係の脆弱性チェック（pip-audit）
 
 # 統合チェック
 make check                  # format, lint, typecheck, testを順番に実行

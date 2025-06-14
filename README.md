@@ -1,10 +1,10 @@
 # Python Template for Claude Code
 
-[![CI](https://github.com/discus0434/python-claude-code-template/actions/workflows/ci.yml/badge.svg)](https://github.com/discus0434/python-claude-code-template/actions/workflows/ci.yml)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/badge/uv-latest-green.svg)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![CI](https://github.com/discus0434/python-template-for-claude-code/actions/workflows/ci.yml/badge.svg)](https://github.com/discus0434/python-template-for-claude-code/actions/workflows/ci.yml)
 
 [Claude Code](https://www.anthropic.com/claude-code)を中心に開発するための、厳格な型チェック、自動フォーマット、CIを備えたモダンなPythonプロジェクトテンプレートです。
 
@@ -68,6 +68,7 @@ uv run pytest
 - **[mypy](https://mypy-lang.org/)** - strictモード有効な静的型チェッカー
 - **[pytest](https://pytest.org/)** - カバレッジ付きテストフレームワーク
 - **[bandit](https://github.com/PyCQA/bandit)** - セキュリティスキャン
+- **[pip-audit](https://github.com/pypa/pip-audit)** - 依存関係の脆弱性チェック
 - **[pre-commit](https://pre-commit.com/)** - コード品質用Gitフック
 
 ### コード品質
@@ -75,6 +76,7 @@ uv run pytest
 - ✅ Ruffによる包括的なリントルール
 - ✅ 自動コードフォーマット
 - ✅ banditによるセキュリティスキャン
+- ✅ pip-auditによる依存関係の脆弱性チェック
 
 ### CI
 - ✅ 継続的インテグレーション用GitHub Actions
