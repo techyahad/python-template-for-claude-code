@@ -110,7 +110,7 @@ check_claude_code() {
     npm i -g @anthropic-ai/claude-code
     print_success "Claude Code installed"
     print_step "Checking Claude Code..."
-    claude-code --version
+    claude --version
     print_success "Claude Code checked"
 }
 

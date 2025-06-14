@@ -23,9 +23,7 @@ help:
 
 # セットアップ
 setup:
-	uv sync --all-extras
-	uv run pre-commit install
-	uv run pre-commit install --hook-type commit-msg
+	chmod +x scripts/setup.sh && ./scripts/setup.sh
 
 # テスト関連
 test:

@@ -21,16 +21,15 @@
 git clone https://github.com/yourusername/project-name.git
 cd project-name
 
-# セットアップスクリプトを実行
-chmod +x scripts/setup.sh
-./scripts/setup.sh
+# セットアップ
+make setup
 ```
 
 セットアップスクリプトは以下を実行します：
 - すべての `project_name` を実際のプロジェクト名に更新（途中でプロジェクト名を入力するように求められます）
 - uvを使用してPython環境を初期化
 - Claude Codeをインストール
-- GitHub CLI（`gh`）をインストール
+- GitHub CLI（`gh`）をインストール（途中でログインを求められます）
 - すべての依存関係をインストール
 - pre-commitフックを設定
 - 初期テストを実行
@@ -149,16 +148,11 @@ make check
 make check-all
 ```
 
-### Makefileの利用
-
-このプロジェクトには、よく使うコマンドをまとめたMakefileが含まれています：
+### その他のよく使うコマンド
 
 ```bash
 # 利用可能なコマンドを表示
 make help
-
-# セットアップ（依存関係インストール + pre-commit設定）
-make setup
 
 # キャッシュファイルの削除
 make clean

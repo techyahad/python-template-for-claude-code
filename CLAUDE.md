@@ -117,7 +117,7 @@ def process_items(
 
 ```bash
 # 開発環境のセットアップ
-make setup                  # 依存関係インストール + pre-commitフック設定
+make setup                  # 依存関係インストール + pre-commitフック設定など
 
 # テスト実行
 make test                   # テスト実行
