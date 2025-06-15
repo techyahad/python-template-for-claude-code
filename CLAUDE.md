@@ -1,4 +1,9 @@
-# CLAUDE.md
+---
+title: CLAUDE.md
+created_at: 2025-06-14
+updated_at: 2025-06-15
+# このプロパティは、Claude Codeが関連するドキュメントの更新を検知するために必要です。消去しないでください。
+---
 
 このファイルは、[Claude Code](https://www.anthropic.com/claude-code) がこのリポジトリのコードを扱う際のガイダンスを提供します。
 
