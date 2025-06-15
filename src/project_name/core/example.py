@@ -3,11 +3,13 @@
 from dataclasses import dataclass
 from typing import Any, Protocol
 
+from project_name.types import ItemDict
+
 
 class DataProcessor(Protocol):
     """Protocol for data processors."""
 
-    def process(self, data: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def process(self, data: list[ItemDict]) -> list[ItemDict]:
         """Process a list of data items."""
         ...
 
@@ -59,9 +61,9 @@ class ExampleClass:
             Configuration object
         """
         self.config = config
-        self.data: list[dict[str, Any]] = []
+        self.data: list[ItemDict] = []
 
-    def add_item(self, item: dict[str, Any]) -> None:
+    def add_item(self, item: ItemDict) -> None:
         """Add an item to the internal storage.
 
         Parameters
@@ -84,7 +86,7 @@ class ExampleClass:
 
         self.data.append(item)
 
-    def _validate_item(self, item: dict[str, Any]) -> None:
+    def _validate_item(self, item: ItemDict) -> None:
         """Validate an item before adding.
 
         Parameters
@@ -97,8 +99,15 @@ class ExampleClass:
         ValueError
             If item is invalid
         """
+        # Type checking is handled by mypy, but runtime check for safety
         if not isinstance(item, dict):
             raise ValueError(f"Item must be a dictionary, got {type(item).__name__}")
+
+        # Validate required fields
+        required_fields = {"id", "name", "value"}
+        missing_fields = required_fields - set(item.keys())
+        if missing_fields:
+            raise ValueError(f"Missing required fields: {missing_fields}")
 
         if not item:
             raise ValueError("Item cannot be empty")
@@ -108,7 +117,7 @@ class ExampleClass:
         *,
         filter_key: str | None = None,
         filter_value: Any | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> list[ItemDict]:
         """Get items with optional filtering.
 
         Parameters
@@ -141,11 +150,11 @@ class ExampleClass:
 
 
 def process_data(
-    data: list[dict[str, Any]],
+    data: list[ItemDict],
     processor: DataProcessor,
     *,
     validate: bool = True,
-) -> list[dict[str, Any]]:
+) -> list[ItemDict]:
     """Process data using a processor.
 
     Parameters

@@ -33,6 +33,7 @@ htmlcov/
 test-results.xml
 coverage.xml
 .tox/
+.hypothesis/
 
 # Local
 .env

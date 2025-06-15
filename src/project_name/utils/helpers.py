@@ -2,12 +2,14 @@
 
 import json
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TypeVar
+
+from project_name.types import JSONObject, JSONValue
 
 T = TypeVar("T")
 
 
-def load_json_file(filepath: str | Path) -> dict[str, Any]:
+def load_json_file(filepath: str | Path) -> JSONObject:
     """Load JSON data from a file.
 
     Parameters
@@ -17,8 +19,8 @@ def load_json_file(filepath: str | Path) -> dict[str, Any]:
 
     Returns
     -------
-    dict[str, Any]
-        Loaded JSON data
+    JSONObject
+        Loaded JSON data as a dictionary
 
     Raises
     ------
@@ -45,7 +47,7 @@ def load_json_file(filepath: str | Path) -> dict[str, Any]:
 
 
 def save_json_file(
-    data: dict[str, Any],
+    data: JSONObject,
     filepath: str | Path,
     *,
     indent: int = 2,
@@ -55,8 +57,8 @@ def save_json_file(
 
     Parameters
     ----------
-    data : dict[str, Any]
-        Data to save
+    data : JSONObject
+        JSON-compatible dictionary to save
     filepath : str | Path
         Path to save to
     indent : int
@@ -103,17 +105,17 @@ def chunk_list(items: list[T], chunk_size: int) -> list[list[T]]:
 
 
 def flatten_dict(
-    nested_dict: dict[str, Any],
+    nested_dict: dict[str, JSONValue],
     *,
     separator: str = ".",
     prefix: str = "",
-) -> dict[str, Any]:
+) -> dict[str, JSONValue]:
     """Flatten a nested dictionary.
 
     Parameters
     ----------
-    nested_dict : dict[str, Any]
-        Dictionary to flatten
+    nested_dict : dict[str, JSONValue]
+        Dictionary with JSON-compatible values to flatten
     separator : str
         Separator for keys
     prefix : str
@@ -121,15 +123,15 @@ def flatten_dict(
 
     Returns
     -------
-    dict[str, Any]
-        Flattened dictionary
+    dict[str, JSONValue]
+        Flattened dictionary with dot-notation keys
 
     Examples
     --------
     >>> flatten_dict({"a": {"b": 1, "c": 2}})
     {"a.b": 1, "a.c": 2}
     """
-    items: list[tuple[str, Any]] = []
+    items: list[tuple[str, JSONValue]] = []
 
     for key, value in nested_dict.items():
         new_key = f"{prefix}{separator}{key}" if prefix else key
