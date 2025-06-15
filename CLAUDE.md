@@ -4,11 +4,11 @@
 
 ## プロジェクト概要
 
-**プロジェクトを開始する前に、必ずこの項目をプロジェクトに特化したものに更新してください。**
+**To Claude Code: プロジェクトを開始する前に、必ずこの項目をプロジェクトに特化したものに更新してください。**
 
-このプロジェクトは、[Claude Code](https://www.anthropic.com/claude-code) での開発に最適化されたPythonプロジェクトテンプレートです。
+このプロジェクトは、Claude Codeでの開発に最適化されたPythonプロジェクトテンプレートです。
 厳格な型チェック、自動化されたコード品質管理、CIに加えて、GitHub CLIを使用したGitHub操作をサポートします。
-また、[Claude Code](https://www.anthropic.com/claude-code) との協働をサポートするためのドキュメントも提供します。
+また、Claude Codeとの協働をサポートするためのドキュメントも提供します。
 
 ### 開発方針
 
@@ -176,11 +176,8 @@ make pr TITLE="リファクタリング" BODY="コードの可読性を向上さ
 # 直接gh CLIを使用する場合
 gh pr create --title "Feature: Add new functionality" --body "Description of changes"
 
-# テンプレートを使用したPR作成
-gh pr create --template .github/PULL_REQUEST_TEMPLATE.md
-
 # ドラフトPRの作成
-gh pr create --draft --title "WIP: Working on feature"
+gh pr create --draft --title "WIP: Working on feature" --body "Description of changes"
 ```
 
 ### イシュー管理
