@@ -74,7 +74,7 @@ project-root/
 
 ## 型システムとコード品質
 
-### 強化された型ヒント
+### Python3.12+基準の強化された型ヒント
 
 **PEP 695新型構文とTypedDict・Literal・Protocolの活用**
 ```python
@@ -109,44 +109,117 @@ config: JSONObject = {"setting": True, "count": 42}
 - **インポート順序**: 標準ライブラリ → サードパーティ → ローカル（ruffが自動整理）
 - **インポート形式**: `from project_name.module import function`
 
-### 型ヒントのベストプラクティス
+### 更新された型ヒントベストプラクティス
 
 ```python
-from typing import Any, TypeVar, Generic, Protocol
-from collections.abc import Sequence, Mapping, Iterator
-
-T = TypeVar("T")
+# 共通型の使用
+from project_name.types import ItemDict, ProcessorStatus, JSONObject
+from typing import Protocol
+from collections.abc import Sequence
 
 class DataProcessor(Protocol):
-    """データプロセッサのプロトコル定義"""
-    def process(self, data: Sequence[T]) -> list[T]: ...
+    """改良されたデータプロセッサープロトコル"""
+    def process(self, data: list[ItemDict]) -> list[ItemDict]: ...
 
 def process_items(
-    items: Sequence[str],
+    items: list[ItemDict],
     processor: DataProcessor,
     *,  # キーワード専用引数を強制
-    max_items: int | None = None,
-) -> list[str]:
-    """
-    アイテムを処理する。
+    validate: bool = True,
+) -> list[ItemDict]:
+    """アイテムを処理する。
 
     Parameters
     ----------
-    items : Sequence[str]
+    items : list[ItemDict]
         処理対象のアイテムリスト
     processor : DataProcessor
-        データプロセッサ
-    max_items : int | None, optional
-        処理する最大アイテム数、デフォルトは制限なし
+        データプロセッサー
+    validate : bool
+        バリデーションを実行するか
 
     Returns
     -------
-    list[str]
+    list[ItemDict]
         処理済みアイテムのリスト
     """
-    if max_items is not None:
-        items = items[:max_items]
+    if validate and not items:
+        raise ValueError("データが空です")
     return processor.process(items)
+```
+
+## パフォーマンス測定とベンチマーク
+
+### プロファイリングツールの使用
+
+```python
+from project_name.utils.profiling import profile, timeit, Timer, profile_context
+
+# 関数デコレーター
+@profile
+def heavy_computation():
+    return sum(i**2 for i in range(10000))
+
+@timeit
+def quick_function():
+    return [i for i in range(1000)]
+
+# コンテキストマネージャー
+with Timer("Custom operation") as timer:
+    result = process_large_dataset()
+print(f"Took {timer.elapsed:.4f} seconds")
+
+# 詳細プロファイリング
+with profile_context(sort_by="cumulative", limit=10) as prof:
+    complex_operation()
+```
+
+### ベンチマーク自動化
+
+GitHub Actionsで自動ベンチマークが実行されます：
+- PR作成時にパフォーマンス比較
+- 10%以上の性能低下でアラート
+- ベンチマーク結果をPRコメントに自動投稿
+
+## テスト戦略
+
+### テストの種類
+
+1. **単体テスト** (`tests/unit/`)
+   - 関数・クラスの基本動作
+   - 正常系・異常系・エッジケース
+
+2. **プロパティベーステスト** (`tests/property/`)
+   - Hypothesisで様々な入力パターンを自動生成
+   - 不変条件と数学的性質を検証
+
+3. **統合テスト** (`tests/integration/`)
+   - コンポーネント間の連携
+
+### テスト命名規約
+
+```python
+# 日本語で意図を明確に
+def test_正常系_有効なデータで処理成功():
+    """chunk_listが正しくチャンク化できることを確認。"""
+
+ def test_異常系_不正なサイズでValueError():
+    """チャンクサイズが0以下の場合、ValueErrorが発生することを確認。"""
+
+def test_エッジケース_空リストで空結果():
+    """空のリストをチャンク化すると空の結果が返されることを確認。"""
+```
+
+## セキュリティベストプラクティス
+
+### 自動セキュリティチェック
+
+```bash
+# セキュリティスキャン
+make security
+
+# 依存関係の脆弱性チェック
+make audit
 ```
 
 ## よく使うコマンド
@@ -178,6 +251,10 @@ make profile                # プロファイリング実行
 make check                  # format, lint, typecheck, testを順番に実行
 make check-all              # pre-commitで全ファイルをチェック
 
+# パフォーマンス測定
+make benchmark              # ローカルベンチマーク実行
+make profile                # プロファイリング実行
+
 # GitHub操作
 make pr TITLE="タイトル" BODY="本文" [LABEL="ラベル"]      # PR作成
 make issue TITLE="タイトル" BODY="本文" [LABEL="ラベル"]   # イシュー作成
@@ -187,8 +264,10 @@ make clean                  # キャッシュファイルの削除
 make help                   # 利用可能なコマンド一覧
 
 # 依存関係の追加
-uv add package_name
-uv add --dev dev_package_name
+uv add package_name                    # ランタイム依存関係
+uv add --dev dev_package_name          # 開発依存関係
+uv sync --all-extras                   # 全依存関係を同期
+uv lock --upgrade                      # 依存関係を更新
 ```
 
 ### 直接実行する場合（uv run使用）
@@ -206,11 +285,34 @@ uv run pip-audit                    # 脆弱性チェック
 uv run pre-commit run --all-files   # 全チェック
 ```
 
+### Time-saving tips
+
+- 複数の独立した処理を実行しなければならない場合は、コマンドを順番に呼び出すのではなく、同時に実行可能なものをまとめて実行することを推奨
+- コマンドを実行する前に、`make help` を実行して、利用可能なコマンドを確認可能
+
 ## GitHub操作のベストプラクティス
 
 Claude Codeは `gh` コマンドを使用してGitHub操作を行うことができます。
 
 ### プルリクエスト作成
+
+#### ブランチ名の命名規則
+
+- 機能追加: `feature/...`
+- バグ修正: `fix/...`
+- リファクタリング: `refactor/...`
+- ドキュメント更新: `docs/...`
+- テスト: `test/...`
+
+#### ラベル名の命名規則
+
+- 機能追加: `enhancement`
+- バグ修正: `bug`
+- リファクタリング: `refactor`
+- ドキュメント更新: `documentation`
+- テスト: `test`
+
+#### コマンドの例
 
 ```bash
 # Makefileコマンドを使用したPR作成
