@@ -1,0 +1,197 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      compare_branch:
+        description: 'Branch to compare against (default: main)'
+        required: false
+        default: 'main'
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    permissions:
+      # Need write permission to comment on PRs
+      pull-requests: write
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for comparisons
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      run: uv python pin ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv add pytest-benchmark
+
+    - name: Create benchmark script
+      run: |
+        cat > benchmark_suite.py << 'EOF'
+        """Benchmark suite for performance testing."""
+        import random
+        from project_name.utils.helpers import chunk_list, flatten_dict
+        from project_name.core.example import ExampleClass, ExampleConfig
+
+        def test_chunk_list_small(benchmark):
+            """Benchmark chunk_list with small lists."""
+            data = list(range(100))
+            result = benchmark(chunk_list, data, 10)
+            assert len(result) == 10
+
+        def test_chunk_list_large(benchmark):
+            """Benchmark chunk_list with large lists."""
+            data = list(range(10000))
+            result = benchmark(chunk_list, data, 100)
+            assert len(result) == 100
+
+        def test_flatten_dict_shallow(benchmark):
+            """Benchmark flatten_dict with shallow nesting."""
+            data = {f"key{i}": {"nested": i} for i in range(100)}
+            result = benchmark(flatten_dict, data)
+            assert len(result) == 100
+
+        def test_flatten_dict_deep(benchmark):
+            """Benchmark flatten_dict with deep nesting."""
+            data = {"level1": {"level2": {"level3": {"level4": {"level5": i}}} for i in range(50)}}
+            result = benchmark(flatten_dict, data)
+
+        def test_example_class_operations(benchmark):
+            """Benchmark ExampleClass operations."""
+            config = ExampleConfig(name="bench", max_items=1000)
+            instance = ExampleClass(config)
+            items = [{"id": i, "name": f"item{i}", "value": random.randint(1, 1000)} for i in range(100)]
+
+            def run_operations():
+                for item in items:
+                    instance.add_item(item)
+                filtered = instance.get_items(filter_key="value", filter_value=500)
+                return len(filtered)
+
+            result = benchmark(run_operations)
+        EOF
+
+    - name: Run benchmarks
+      run: |
+        uv run pytest benchmark_suite.py \
+          --benchmark-only \
+          --benchmark-json=benchmark_results.json \
+          --benchmark-autosave \
+          --benchmark-compare-fail=min:10% \
+          -v
+
+    - name: Store benchmark result
+      uses: benchmark-action/github-action-benchmark@v1
+      if: github.event_name != 'pull_request'
+      with:
+        name: Python Benchmark
+        tool: 'pytest'
+        output-file-path: benchmark_results.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        auto-push: true
+        # Store benchmark results in gh-pages branch
+        gh-pages-branch: gh-pages
+        benchmark-data-dir-path: benchmarks
+
+    - name: Compare benchmark results (PRs)
+      uses: benchmark-action/github-action-benchmark@v1
+      if: github.event_name == 'pull_request'
+      with:
+        name: Python Benchmark
+        tool: 'pytest'
+        output-file-path: benchmark_results.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        alert-threshold: '110%'  # Alert if performance degrades by >10%
+        comment-on-alert: true
+        fail-on-alert: false
+        alert-comment-cc-users: '@maintainers'
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: benchmark-results
+        path: |
+          benchmark_results.json
+          .benchmarks/
+
+    - name: Generate performance report
+      if: github.event_name == 'pull_request'
+      run: |
+        cat > performance_report.py << 'EOF'
+        import json
+        import sys
+
+        with open('benchmark_results.json', 'r') as f:
+            data = json.load(f)
+
+        print("## 🚀 Performance Benchmark Results\n")
+        print("| Test | Min (ms) | Max (ms) | Mean (ms) | Std Dev |")
+        print("|------|----------|----------|-----------|---------|")
+
+        for benchmark in data['benchmarks']:
+            name = benchmark['name'].replace('test_', '').replace('_', ' ').title()
+            stats = benchmark['stats']
+            print(f"| {name} | {stats['min']*1000:.2f} | {stats['max']*1000:.2f} | {stats['mean']*1000:.2f} | {stats['stddev']*1000:.2f} |")
+
+        print(f"\n_Machine info: {data['machine_info']['cpu']['brand_raw']}_")
+        EOF
+
+        uv run python performance_report.py > performance_report.md
+
+    - name: Comment PR with performance report
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('performance_report.md', 'utf8');
+
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(comment =>
+            comment.user.type === 'Bot' &&
+            comment.body.includes('Performance Benchmark Results')
+          );
+
+          const body = report + '\n\n_Updated by benchmark workflow_';
+
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+          }

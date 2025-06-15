@@ -66,25 +66,34 @@ uv run pytest
 - **[Ruff](https://github.com/astral-sh/ruff)** - 超高速Pythonリンター・フォーマッター
 - **[mypy](https://mypy-lang.org/)** - strictモード有効な静的型チェッカー
 - **[pytest](https://pytest.org/)** - カバレッジ付きテストフレームワーク
+- **[hypothesis](https://hypothesis.readthedocs.io/)** - プロパティベーステストフレームワーク
 - **[bandit](https://github.com/PyCQA/bandit)** - セキュリティスキャン
 - **[pip-audit](https://github.com/pypa/pip-audit)** - 依存関係の脆弱性チェック
 - **[pre-commit](https://pre-commit.com/)** - コード品質用Gitフック
 - **[GitHub CLI](https://cli.github.com/)** - PR, Issue発行用のコマンドラインツール
+- **[Sphinx](https://www.sphinx-doc.org/)** - ドキュメント自動生成
 
 ### コード品質
-- ✅ mypyによる厳格な型チェック
+- ✅ mypyによる厳格な型チェック（TypedDict・Literal対応）
 - ✅ Ruffによる包括的なリントルール
 - ✅ 自動コードフォーマット
+- ✅ Hypothesisによるプロパティベーステスト
+- ✅ 統合パフォーマンスプロファイリング
 - ✅ banditによるセキュリティスキャン
 - ✅ pip-auditによる依存関係の脆弱性チェック
+- ✅ 包括的なセキュリティポリシー
 
-### CI
+### CI/CD
 - ✅ 継続的インテグレーション用GitHub Actions
+- ✅ 自動パフォーマンスベンチマーク
+- ✅ PR時の性能比較とアラート
 - ✅ Dependabotによる自動依存関係更新
 - ✅ GitHub CLIによるPR, Issue作成機能
 
-### ドキュメント
+### ドキュメントと例
 - ✅ 最適なClaude Code統合のためのCLAUDE.md
+- ✅ Sphinx対応ドキュメント生成
+- ✅ 包括的なセキュリティポリシー
 - ✅ `docs/`ディレクトリ内のカテゴリ別ドキュメント
 
 ## 📁 プロジェクト構造
@@ -92,7 +101,9 @@ uv run pytest
 ```
 project-root/
 ├── .github/                     # GitHub Actionsの設定ファイル
-│   ├── workflows/               # GitHub Actionsのワークフロー
+│   ├── workflows/               # CI/CD + ベンチマークワークフロー
+│   │   ├── ci.yml              # メインCI（テスト・リント・型チェック）
+│   │   └── benchmark.yml       # パフォーマンスベンチマーク
 │   ├── dependabot.yml           # Dependabotの設定
 │   ├── ISSUE_TEMPLATE/          # Issueテンプレート
 │   └── PULL_REQUEST_TEMPLATE.md # Pull Requestテンプレート
@@ -100,35 +111,46 @@ project-root/
 │   └── project_name/            # メインパッケージ（uv syncでインストール可能）
 │       ├── __init__.py
 │       ├── py.typed             # PEP 561準拠の型情報マーカー
+│       ├── types.py             # プロジェクト共通型定義
 │       ├── core/                # コアロジック
-│       ├── utils/               # ユーティリティ
-│       └── ...
+│       │   └── example.py       # 型ヒント強化済みサンプル
+│       └── utils/               # ユーティリティ
+│           ├── helpers.py       # JSON・リスト・辞書操作
+│           └── profiling.py     # パフォーマンス測定ツール
 ├── tests/                       # テストコード
 │   ├── unit/                    # 単体テスト
+│   │   ├── test_example.py     # 既存テスト
+│   │   └── test_helpers.py     # 全ヘルパー関数テスト
+│   ├── property/                # プロパティベーステスト
+│   │   └── test_helpers_property.py # Hypothesis使用
 │   ├── integration/             # 統合テスト
 │   └── conftest.py              # pytest設定
 ├── docs/                        # ドキュメント
-├── scripts/                     # ユーティリティスクリプト
-├── pyproject.toml               # uv/ruff/mypyの設定ファイル
-├── .gitignore                   # バージョン管理除外ファイル
-├── .pre-commit-config.yaml      # pre-commitの設定ファイル
-├── README.md                    # プロジェクトの説明
-└── CLAUDE.md                    # Claude Code用の説明
+├── scripts/                     # セットアップスクリプト
+├── pyproject.toml               # 依存関係・ツール設定
+├── .pre-commit-config.yaml      # pre-commit設定
+├── README.md                    # プロジェクト説明
+└── CLAUDE.md                    # Claude Code用ガイド
 ```
 
 ## 🛠️ 開発
 
-### テストの実行
+### 📋 テストの実行
 
 ```bash
-# すべてのテストを実行
+# すべてのテストを実行（単体・プロパティ・統合）
 make test
 
 # カバレッジ付きで実行
 make test-cov
 
-# 特定のテストを実行（直接実行）
-uv run pytest tests/unit/test_example.py -v
+# テスト種別で実行
+uv run pytest tests/unit/ -v           # 単体テスト
+uv run pytest tests/property/ -v       # プロパティベーステスト
+uv run pytest tests/integration/ -v    # 統合テスト
+
+# 特定のテストを実行
+uv run pytest tests/unit/test_helpers.py -v
 ```
 
 ### コード品質
@@ -150,7 +172,22 @@ make check
 make check-all
 ```
 
-### その他のよく使うコマンド
+### ⚡ パフォーマンスとプロファイリング
+
+```bash
+# パフォーマンスベンチマーク実行
+make benchmark
+
+# カスタムプロファイリング
+uv run python -c "
+from project_name.utils.profiling import profile_context
+with profile_context() as prof:
+    # 重い処理
+    pass
+"
+```
+
+### 🛠️ その他のコマンド
 
 ```bash
 # 利用可能なコマンドを表示
@@ -160,7 +197,7 @@ make help
 make clean
 ```
 
-### 依存関係の追加
+### 📦 依存関係の管理
 
 ```bash
 # ランタイム依存関係を追加
@@ -169,11 +206,17 @@ uv add requests
 # 開発依存関係を追加
 uv add --dev pytest-mock
 
+# ドキュメント関連依存関係を追加
+uv sync --extra docs
+
+# すべての依存関係を同期
+uv sync --all-extras
+
 # 依存関係を更新
 uv lock --upgrade
 ```
 
-## 🤝 Claude Code との連携
+## 🤝 Claude Code との高度連携
 
 このテンプレートはClaude Code用に最適化されています。`CLAUDE.md`ファイルが以下を提供します：
 - プロジェクトのコンテキストと構造
@@ -190,10 +233,22 @@ Claude Code使用時：
 4. 新機能にはテストが作成されます
 5. 必要に応じてPRを作成します
 
-## 📚 ドキュメント
+### Claude Codeの活用方法
 
-- [CLAUDE.md](CLAUDE.md) - Claude Code用指示
-- [claude-collaboration-guide.md](docs/claude-collaboration-guide.md) - 人間とClaude Codeの連携ガイド
+1. **自動読み込み**: `CLAUDE.md`でプロジェクトコンテキストを自動把握
+2. **型安全性**: 強化された型ヒントでバグを事前防止
+3. **品質保証**: 自動リント・フォーマット・テスト実行
+4. **パフォーマンス最適化**: プロファイリングツールでボトルネック特定
+
+## 📚 ドキュメントとリソース
+
+### メインドキュメント
+- [CLAUDE.md](CLAUDE.md) - Claude Code用包括的ガイド
+
+### 連携ガイド
+- [claude-collaboration-guide.md](docs/claude-collaboration-guide.md) - 人間とClaude Codeの高度連携
+- [ml-project-guide.md](docs/ml-project-guide.md) - 機械学習プロジェクト用設定
+- [backend-project-guide.md](docs/backend-project-guide.md) - FastAPIバックエンド用設定
 
 ## 📋 新規プロジェクト用チェックリスト
 

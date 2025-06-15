@@ -61,7 +61,7 @@ class TestExampleClass:
         example_instance: ExampleClass,
     ) -> None:
         """アイテムを正常に追加できることを確認。"""
-        item = {"id": 1, "value": "test"}
+        item = {"id": 1, "name": "test_item", "value": 42}
         example_instance.add_item(item)
 
         assert len(example_instance) == 1
@@ -104,18 +104,18 @@ class TestExampleClass:
         example_config.max_items = 2
         instance = ExampleClass(example_config)
 
-        instance.add_item({"id": 1})
-        instance.add_item({"id": 2})
+        instance.add_item({"id": 1, "name": "item1", "value": 10})
+        instance.add_item({"id": 2, "name": "item2", "value": 20})
 
         with pytest.raises(ValueError, match="max_items limit"):
-            instance.add_item({"id": 3})
+            instance.add_item({"id": 3, "name": "item3", "value": 30})
 
     def test_異常系_空の辞書でValueError(
         self,
         example_instance: ExampleClass,
     ) -> None:
         """空の辞書を追加しようとするとエラーになることを確認。"""
-        with pytest.raises(ValueError, match="Item cannot be empty"):
+        with pytest.raises(ValueError, match="Missing required fields"):
             example_instance.add_item({})
 
     def test_異常系_辞書以外を追加しようとするとValueError(
