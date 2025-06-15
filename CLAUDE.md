@@ -24,8 +24,9 @@
 - **主要ツール**: uv (パッケージ管理), Ruff (リント・フォーマット), mypy (型チェック), pytest (テスト)
 - **パッケージ管理**: uv
 - **リンター/フォーマッター**: ruff
-- **型チェッカー**: mypy (strict mode)
-- **テストフレームワーク**: pytest
+- **型チェッカー**: mypy (strict mode + PEP 695対応)
+- **テストフレームワーク**: pytest + Hypothesis (プロパティベーステスト)
+- **パフォーマンス**: pytest-benchmark (自動ベンチマーク)
 - **自動化**: pre-commit, GitHub Actions
 
 ## プロジェクト構造(デフォルト。必要に応じて更新してください)
@@ -33,19 +34,28 @@
 ```
 project-root/
 ├── .github/                     # GitHub Actionsの設定ファイル
-│   ├── workflows/               # GitHub Actionsのワークフロー
+│   ├── workflows/               # CI/CD + ベンチマークワークフロー
+│   │   ├── ci.yml              # メインCI（テスト・リント・型チェック）
+│   │   └── benchmark.yml       # パフォーマンスベンチマーク
 │   ├── dependabot.yml           # Dependabotの設定
-│   ├── ISSUE_TEMPLATE.md        # Issueテンプレート
+│   ├── ISSUE_TEMPLATE/          # Issueテンプレート
 │   └── PULL_REQUEST_TEMPLATE.md # Pull Requestテンプレート
 ├── src/
 │   └── project_name/            # メインパッケージ（uv syncでインストール可能）
 │       ├── __init__.py
 │       ├── py.typed             # PEP 561準拠の型情報マーカー
+│       ├── types.py             # プロジェクト共通型定義
 │       ├── core/                # コアロジック
-│       ├── utils/               # ユーティリティ
-│       └── ...
+│       │   └── example.py       # 型ヒント強化済みサンプル
+│       └── utils/               # ユーティリティ
+│           ├── helpers.py       # JSON・リスト・辞書操作
+│           └── profiling.py     # パフォーマンス測定ツール
 ├── tests/                       # テストコード
 │   ├── unit/                    # 単体テスト
+│   │   ├── test_example.py     # 既存テスト
+│   │   └── test_helpers.py     # 全ヘルパー関数テスト
+│   ├── property/                # プロパティベーステスト（Hypothesis）
+│   │   └── test_helpers_property.py # Hypothesis使用
 │   ├── integration/             # 統合テスト
 │   └── conftest.py              # pytest設定
 ├── docs/                        # ドキュメント
@@ -57,11 +67,34 @@ project-root/
 └── CLAUDE.md                    # このファイル
 ```
 
+## 型システムとコード品質
+
+### 強化された型ヒント
+
+**PEP 695新型構文とTypedDict・Literal・Protocolの活用**
+```python
+# src/project_name/types.py で定義済み
+from project_name.types import ItemDict, ProcessorStatus, JSONObject
+
+# PEP 695型構文の使用
+type ProcessorStatus = Literal["success", "error", "pending"]
+type JSONValue = str | int | float | bool | None | dict[str, "JSONValue"] | list["JSONValue"]
+
+# 構造化されたデータ
+item: ItemDict = {"id": 1, "name": "テスト", "value": 100}
+
+# ステータス管理
+status: ProcessorStatus = "success"  # "success" | "error" | "pending"
+
+# JSON操作
+config: JSONObject = {"setting": True, "count": 42}
+```
+
 ## コーディング規約
 
 ### Python コーディングスタイル
 
-- **型ヒント**: Python 3.12+ の型ヒントを必ず使用（mypy strict mode準拠）
+- **型ヒント**: Python 3.12+ の型ヒントを必ず使用（mypy strict mode + PEP 695準拠）
 - **Docstring**: NumPy形式のDocstringを使用
 - **命名規則**:
   - クラス: PascalCase
@@ -120,15 +153,21 @@ def process_items(
 make setup                  # 依存関係インストール + pre-commitフック設定など
 
 # テスト実行
-make test                   # テスト実行
+make test                   # 全テスト実行（単体・プロパティベース・統合）
 make test-cov               # カバレッジ付きテスト実行
+make test-unit              # 単体テストのみ実行
+make test-property          # プロパティベーステストのみ実行
 
 # コード品質チェック
 make format                 # コードフォーマット
 make lint                   # リントチェック（自動修正付き）
-make typecheck              # 型チェック
+make typecheck              # 型チェック（strict mode）
 make security               # セキュリティチェック（bandit）
 make audit                  # 依存関係の脆弱性チェック（pip-audit）
+
+# パフォーマンス測定
+make benchmark              # ローカルベンチマーク実行
+make profile                # プロファイリング実行
 
 # 統合チェック
 make check                  # format, lint, typecheck, testを順番に実行
@@ -151,11 +190,15 @@ uv add --dev dev_package_name
 
 ```bash
 # Makefileが使えない環境での代替コマンド
-uv run pytest
-uv run ruff format .
-uv run ruff check . --fix
-uv run mypy src/ --strict
-uv run pre-commit run --all-files
+uv run pytest                        # 全テスト
+uv run pytest tests/unit/           # 単体テストのみ
+uv run pytest tests/property/       # プロパティテストのみ
+uv run ruff format .                 # フォーマット
+uv run ruff check . --fix           # リント
+uv run mypy src/ --strict           # 型チェック
+uv run bandit -r src/               # セキュリティスキャン
+uv run pip-audit                    # 脆弱性チェック
+uv run pre-commit run --all-files   # 全チェック
 ```
 
 ## GitHub操作のベストプラクティス
@@ -202,6 +245,68 @@ gh issue list
 gh issue view 123
 ```
 
+## テスト戦略
+
+### テストの種類
+
+1. **単体テスト** (`tests/unit/`)
+   - 関数・クラスの基本動作
+   - 正常系・異常系・エッジケース
+
+2. **プロパティベーステスト** (`tests/property/`)
+   - Hypothesisで様々な入力パターンを自動生成
+   - 不変条件と数学的性質を検証
+
+3. **統合テスト** (`tests/integration/`)
+   - コンポーネント間の連携
+
+### テスト命名規約
+
+```python
+# 日本語で意図を明確に
+def test_正常系_有効なデータで処理成功():
+    """chunk_listが正しくチャンク化できることを確認。"""
+
+def test_異常系_不正なサイズでValueError():
+    """チャンクサイズが0以下の場合、ValueErrorが発生することを確認。"""
+
+def test_エッジケース_空リストで空結果():
+    """空のリストをチャンク化すると空の結果が返されることを確認。"""
+```
+
+## パフォーマンス測定とベンチマーク
+
+### プロファイリングツールの使用
+
+```python
+from project_name.utils.profiling import profile, timeit, Timer, profile_context
+
+# 関数デコレーター
+@profile
+def heavy_computation():
+    return sum(i**2 for i in range(10000))
+
+@timeit
+def quick_function():
+    return [i for i in range(1000)]
+
+# コンテキストマネージャー
+with Timer("Custom operation") as timer:
+    result = process_large_dataset()
+print(f"Took {timer.elapsed:.4f} seconds")
+
+# 詳細プロファイリング
+with profile_context(sort_by="cumulative", limit=10) as prof:
+    complex_operation()
+```
+
+### ベンチマーク自動化
+
+GitHub Actionsで自動ベンチマークが実行されます：
+- PR作成時にパフォーマンス比較
+- 10%以上の性能低下でアラート
+- ベンチマーク結果をPRコメントに自動投稿
+
 ## 実装戦略
 
 このプロジェクトで作業する際は、以下の点に特に注意してください：
@@ -211,7 +316,7 @@ gh issue view 123
    - 新しい依存関係は `uv add` で追加（直接 pyproject.toml を編集しない）
 
 2. **コード品質**
-   - 型ヒントは省略しない（mypy strict mode準拠）
+   - 型ヒントは省略しない（mypy strict mode + PEP 695準拠）
    - 新しいコードを書いた後は必ず `make format` を実行
    - テストを書く際は、正常系・異常系・エッジケースをカバー
 
@@ -226,13 +331,18 @@ gh issue view 123
 
 5. **テスト**
    - 新機能には必ず対応するテストを追加
+   - 単体テスト・プロパティベーステスト・統合テストを適切に使い分け
    - テストメソッド名は日本語で意図を明確に（例: `test_正常系_ユーザー登録が成功する`）
 
-6. **コミット前の確認**
+6. **パフォーマンス**
+   - 新機能には適切なプロファイリング測定を追加
+   - 性能要件が重要な場合はベンチマークテストを作成
+
+7. **コミット前の確認**
    - `make check-all` でチェックをパス
    - テストがすべて通ることを確認
 
-7. **GitHub操作**
+8. **GitHub操作**
    - イシュー作成時は `make issue`、PR作成時は `make pr` を使用
 
 
