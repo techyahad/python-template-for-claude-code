@@ -69,6 +69,7 @@ uv run pytest
 - **[bandit](https://github.com/PyCQA/bandit)** - セキュリティスキャン
 - **[pip-audit](https://github.com/pypa/pip-audit)** - 依存関係の脆弱性チェック
 - **[pre-commit](https://pre-commit.com/)** - コード品質用Gitフック
+- **[GitHub CLI](https://cli.github.com/)** - PR, Issue発行用のコマンドラインツール
 
 ### コード品質
 - ✅ mypyによる厳格な型チェック
@@ -80,6 +81,7 @@ uv run pytest
 ### CI
 - ✅ 継続的インテグレーション用GitHub Actions
 - ✅ Dependabotによる自動依存関係更新
+- ✅ GitHub CLIによるPR, Issue作成機能
 
 ### ドキュメント
 - ✅ 最適なClaude Code統合のためのCLAUDE.md
