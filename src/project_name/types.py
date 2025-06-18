@@ -1,5 +1,6 @@
 """Common type definitions for the project."""
 
+from collections.abc import Mapping
 from typing import Literal, TypedDict
 
 # Status types
@@ -38,7 +39,7 @@ class ErrorInfo(TypedDict):
 
     code: str
     message: str
-    details: dict[str, str | int | None]
+    details: Mapping[str, str | int | None]
 
 
 # Result types
@@ -62,8 +63,8 @@ class ValidationResult(TypedDict):
 
 # JSON types
 type JSONPrimitive = str | int | float | bool | None
-type JSONValue = JSONPrimitive | dict[str, "JSONValue"] | list["JSONValue"]
-type JSONObject = dict[str, JSONValue]
+type JSONValue = JSONPrimitive | Mapping[str, "JSONValue"] | list["JSONValue"]
+type JSONObject = Mapping[str, JSONValue]
 
 # File operation types
 type FileOperation = Literal["read", "write", "append", "delete"]
