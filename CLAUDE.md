@@ -1,7 +1,7 @@
 ---
 title: CLAUDE.md
 created_at: 2025-06-14
-updated_at: 2025-06-15
+updated_at: 2025-06-18
 # このプロパティは、Claude Codeが関連するドキュメントの更新を検知するために必要です。消去しないでください。
 ---
 
@@ -72,29 +72,6 @@ project-root/
 └── CLAUDE.md                    # このファイル
 ```
 
-## 型システムとコード品質
-
-### Python3.12+基準の強化された型ヒント
-
-**PEP 695新型構文とTypedDict・Literal・Protocolの活用**
-```python
-# src/project_name/types.py で定義済み
-from project_name.types import ItemDict, ProcessorStatus, JSONObject
-
-# PEP 695型構文の使用
-type ProcessorStatus = Literal["success", "error", "pending"]
-type JSONValue = str | int | float | bool | None | dict[str, "JSONValue"] | list["JSONValue"]
-
-# 構造化されたデータ
-item: ItemDict = {"id": 1, "name": "テスト", "value": 100}
-
-# ステータス管理
-status: ProcessorStatus = "success"  # "success" | "error" | "pending"
-
-# JSON操作
-config: JSONObject = {"setting": True, "count": 42}
-```
-
 ## コーディング規約
 
 ### Python コーディングスタイル
@@ -109,7 +86,7 @@ config: JSONObject = {"setting": True, "count": 42}
 - **インポート順序**: 標準ライブラリ → サードパーティ → ローカル（ruffが自動整理）
 - **インポート形式**: `from project_name.module import function`
 
-### 更新された型ヒントベストプラクティス
+### 型ヒントのベストプラクティス
 
 ```python
 # 共通型の使用
@@ -208,18 +185,6 @@ def test_正常系_有効なデータで処理成功():
 
 def test_エッジケース_空リストで空結果():
     """空のリストをチャンク化すると空の結果が返されることを確認。"""
-```
-
-## セキュリティベストプラクティス
-
-### 自動セキュリティチェック
-
-```bash
-# セキュリティスキャン
-make security
-
-# 依存関係の脆弱性チェック
-make audit
 ```
 
 ## よく使うコマンド
