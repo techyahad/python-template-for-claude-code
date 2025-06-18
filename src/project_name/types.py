@@ -1,6 +1,7 @@
 """Common type definitions for the project."""
 
-from typing import Literal, TypedDict, Mapping
+from collections.abc import Mapping
+from typing import Literal, TypedDict
 
 # Status types
 type ProcessorStatus = Literal["success", "error", "pending"]

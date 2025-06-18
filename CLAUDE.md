@@ -84,7 +84,7 @@ project-root/
   - 定数: UPPER_SNAKE_CASE
   - プライベート: 先頭に `_`
 - **インポート順序**: 標準ライブラリ → サードパーティ → ローカル（ruffが自動整理）
-- **インポート形式**: 
+- **インポート形式**:
     - 相対インポート: `from .module import function`
     - 絶対インポート: `from project_name.module import function`
 

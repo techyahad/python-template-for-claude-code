@@ -1,10 +1,11 @@
 """Utility helper functions."""
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import TypeVar
 
-from ..types import JSONObject, JSONValue, Mapping
+from ..types import JSONObject, JSONValue
 
 T = TypeVar("T")
 
